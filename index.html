@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GHOST SWARM — Quantum Decision Exercise</title>
+<style>
+  :root {
+    --bg: #0d1321;
+    --panel: #1d2436;
+    --accent: #6d4aff;
+    --gold: #d4af37;
+    --text: #e8e9f0;
+    --danger: #e05252;
+    --success: #4caf7d;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+  body { background: var(--bg); color: var(--text); padding: 20px; max-width: 900px; margin: 0 auto; }
+
+  .header { text-align: center; padding: 24px; border-bottom: 2px solid var(--accent); margin-bottom: 24px; }
+  .header h1 { font-size: 2.4em; letter-spacing: 4px; color: var(--accent); }
+  .header p { color: #8890a8; margin-top: 6px; }
+
+  .section { background: var(--panel); border-radius: 10px; padding: 22px; margin-bottom: 20px; border-left: 4px solid var(--accent); }
+  .section h2 { color: var(--gold); margin-bottom: 12px; font-size: 1.2em; text-transform: uppercase; letter-spacing: 1px; }
+
+  .domain { background: var(--panel); border-radius: 10px; padding: 18px; margin-bottom: 16px; border: 1px solid #33406b; }
+  .domain h3 { color: var(--accent); margin-bottom: 10px; font-size: 1.05em; }
+
+  .sit { line-height: 1.65; color: #c4c9da; }
+  .sit strong { color: var(--text); }
+  .tag { display: inline-block; background: var(--accent); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
+
+  .option {
+    display: block; background: #141a2c; border: 2px solid #33406b; border-radius: 8px;
+    padding: 12px 14px; margin: 8px 0; cursor: pointer; transition: all 0.15s;
+  }
+  .option:hover { border-color: var(--accent); }
+  .option.selected { border-color: var(--gold); background: #232d4d; box-shadow: 0 0 8px rgba(212,175,55,0.3); }
+  .option input { margin-right: 8px; accent-color: var(--gold); }
+  .option .hint { font-size: 0.85em; color: #7d86a3; margin-top: 4px; }
+
+  .timer-bar {
+    background: #33406b; height: 10px; border-radius: 5px; overflow: hidden; margin: 10px 0;
+  }
+  .timer-fill { height: 100%; background: var(--gold); width: 100%; transition: width 1s linear; }
+  .timer-text { font-size: 1.8em; text-align: center; color: var(--gold); font-weight: bold; letter-spacing: 2px; }
+  .timer-text.expired { color: var(--danger); animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: 0.3; } }
+
+  button.primary {
+    background: var(--accent); color: white; border: none; padding: 14px 32px; font-size: 1.1em;
+    border-radius: 8px; cursor: pointer; font-weight: bold; letter-spacing: 1px; width: 100%;
+  }
+  button.primary:hover { filter: brightness(1.2); }
+  button:disabled { background: #444; cursor: not-allowed; }
+
+  .result-card { border-radius: 8px; padding: 16px; margin: 12px 0; }
+  .result-card h4 { font-size: 1.1em; margin-bottom: 8px; }
+  .result-correct { background: rgba(76,175,125,0.15); border-left: 4px solid var(--success); }
+  .result-wrong { background: rgba(224,82,82,0.15); border-left: 4px solid var(--danger); }
+
+  .score-box { text-align: center; padding: 20px; font-size: 1.4em; background: #141a2c; border-radius: 10px; margin: 16px 0; border: 1px solid var(--gold); }
+  .score-box .points { font-size: 2.2em; color: var(--gold); font-weight: bold; }
+
+  .hidden { display: none; }
+  .small-note { font-size: 0.85em; color: #7d86a3; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ GHOST SWARM</h1>
+  <p>A 15-Minute Multi-Domain Quantum Decision Exercise</p>
+</div>
+
+<!-- ══════════════ SCREEN 1: MISSION BRIEFING ══════════════ -->
+<div id="screen-briefing">
+  <div class="section">
+    <h2>mission brief — 04:37 local</h2>
+    <div class="sit">
+      <p>Your task force is operating off a hostile coast. In the space of minutes, everything happens at once.</p>
+      <br>
+      <p><span class="tag">AIR</span> <strong>Drone swarm inbound.</strong> Over 200 objects approaching your carrier at low altitude. They dodge every radar sweep automatically and constantly reshape their formations — as if calculating your defenses in real time. Your AWACS sees only fragments.</p>
+      <br>
+      <p><span class="tag">MARITIME</span> <strong>Submarine compromised.</strong> Your submarine, submerged and silent for 12 hours, is being tracked precisely by hostile destroyers. No active sonar was detected.</p>
+      <br>
+      <p><span class="tag">CYBER</span> <strong>Data exfiltration.</strong> Heavy data exfiltration to an unknown address was detected 20 minutes ago. The encryption itself is intact. Meanwhile, you are intercepting the swarm's control signals — but cannot read them: perfectly clean, noise-free links, with no key exchange to intercept.</p>
+      <br>
+      <p><span class="tag">LAND</span> <strong>GPS interference.</strong> Coastal air-defense batteries receive false GPS positions for the drones. Fire-control computers are firing into empty sky.</p>
+      <br>
+      <p><strong>The Commander: "I need a coordinated plan in three minutes. How do we stop the swarm? How do we save the submarine? How do we secure our command net?"</strong></p>
+    </div>
+  </div>
+  <button class="primary" onclick="startDecisionPhase()">▶ BEGIN DECISION PHASE</button>
+</div>
+
+<!-- ══════════════ SCREEN 2: DECISIONS ══════════════ -->
+<div id="screen-decisions" class="hidden">
+
+  <div class="section">
+    <h2>⏱️ decision clock</h2>
+    <div class="timer-text" id="timer-display">03:00</div>
+    <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+    <p class="small-note">You must lock in all three domain decisions before time expires.</p>
+  </div>
+
+  <div class="domain">
+    <h3>🛰️ FREE ACTION — INTELLIGENCE CHANNEL (choose ONE before locking in)</h3>
+    <label class="option"><input type="radio" name="intel" value="traffic">
+      <strong>📊 Traffic Log Analysis</strong>
+      <div class="hint">Reveals when the exfiltration began relative to enemy activity</div>
+    </label>
+    <label class="option"><input type="radio" name="intel" value="radar">
+      <strong>📡 Radar Profile Analysis</strong>
+      <div class="hint">Reveals physical characteristics of the drone swarm</div>
+    </label>
+    <label class="option"><input type="radio" name="intel" value="none">
+      <strong>🚫 Skip intelligence — decide on instinct</strong>
+      <div class="hint">Diagnosis before therapy is usually wise...</div>
+    </label>
+  </div>
+
+  <div class="domain">
+    <h3>1️⃣ AIR — How do you defeat the swarm?</h3>
+    <label class="option"><input type="radio" name="air" value="radar_proto">
+      <strong>👁️ Quantum Radar Prototype</strong>
+      <div class="hint">Detects the drones if they rely on stealth coatings</div>
+    </label>
+    <label class="option"><input type="radio" name="air" value="fusion">
+      <strong>🌐 Networked Radar Fusion</strong>
+      <div class="hint">Links all conventional sensors — overwhelming if the swarm is algorithmically steered</div>
+    </label>
+    <label class="option"><input type="radio" name="air" value="elint">
+      <strong>🔬 Quantum ELINT Intercept Flight</strong>
+      <div class="hint">Reads the swarm's control links if conventionally encrypted</div>
+    </label>
+  </div>
+
+  <div class="domain">
+    <h3>2️⃣ MARITIME — How do you save the submarine?</h3>
+    <label class="option"><input type="radio" name="maritime" value="sensing">
+      <strong>🧲 Quantum Sensing Sweep (magnetometry)</strong>
+      <div class="hint">Locates hostile sensor platforms if detection is magnetic</div>
+    </label>
+    <label class="option"><input type="radio" name="maritime" value="withdraw">
+      <strong>➡️ Withdraw the submarine from current zone</strong>
+      <div class="hint">Effective if the enemy is exploiting stale, previously collected position data</div>
+    </label>
+  </div>
+
+  <div class="domain">
+    <h3>3️⃣ CYBER/C2 — How do you seal the leak?</h3>
+    <label class="option"><input type="radio" name="cyber" value="pqc">
+      <strong>🔐 PQC Emergency Migration</strong>
+      <div class="hint">Ends the leak if legacy encryption has already been broken mathematically</div>
+    </label>
+    <label class="option"><input type="radio" name="cyber" value="segment">
+      <strong>🚫 Network Segmentation &amp; Rebuild</strong>
+      <div class="hint">Stops a classic implant or Trojan in the network</div>
+    </label>
+    <label class="option"><input type="radio" name="cyber" value="qkd">
+      <strong>📡 QKD Emergency Link</strong>
+      <div class="hint">Secures your core command chain against future interception</div>
+    </label>
+  </div>
+
+  <button class="primary" id="submit-btn" onclick="submitDecisions()" disabled>🔒 LOCK IN DECISIONS</button>
+  <p class="small-note" style="text-align:center;margin-top:8px;">Submit unlocks when all three domains are selected. Intel is optional but recommended.</p>
+</div>
+
+<!-- ══════════════ SCREEN 3: RESOLUTION ══════════════ -->
+<div id="screen-results" class="hidden">
+
+  <div class="section">
+    <h2>🎖️ after-action report</h2>
+    <div id="results-container"></div>
+    <div class="score-box">
+      TASK FORCE PERFORMANCE<br>
+      <span class="points" id="final-score">0 / 4</span><br>
+      <span id="score-verdict" style="font-size:0.8em;"></span>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🧠 the convergence lesson</h2>
+    <div class="sit">
+      <p>The adversary's stack acts as <strong>one system</strong>:</p>
+      <p>💻 A <strong>quantum computer</strong> broke your legacy crypto (harvest-now-decrypt-later) and simultaneously optimizes the drone swarm against your radar coverage.<br>
+      🧲 <strong>Quantum sensing</strong> found your silent submarine.<br>
+      📡 <strong>Quantum communication (QKD)</strong> secures the swarm's control links — which is why no electronic warfare could read them.</p>
+      <br>
+      <p>The winning counter was likewise convergent: your quantum sensing sweep didn't just save the submarine — it physically located the QKD relays feeding the swarm, while radar fusion starved the optimizer of a predictable target.</p>
+      <br>
+      <p><strong>Key takeaway for decision-makers:</strong> Post-quantum migration takes years and must begin <em>before</em> the emergency — the decision to commit takes 90 seconds. <em>Diagnose before you act.</em></p>
+    </div>
+  </div>
+
+  <button class="primary" onclick="location.reload()">↺ REPLAY WITH NEW TEAM</button>
+  <p class="small-note" style="text-align:center;margin-top:8px;">
+    Moderator tip: for a second run, tell players the ground truth has shifted (drones ARE stealth / the leak IS a Trojan) to test real diagnostic skill.
+  </p>
+</div>
+
+<script>
+// ─── Ground truth key (moderator can edit these values to create variants) ───
+const TRUTH = {
+  air: "fusion",        // correct: radar fusion
+  maritime: "sensing",  // correct: quantum sensing sweep
+  cyber: "pqc",         // correct: PQC migration
+};
+
+let remaining = 180; // 3 minutes in seconds
+let timerInterval = null;
+
+// Highlight selected options visually
+document.querySelectorAll('.option input[type="radio"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    // Clear siblings
+    radio.closest('.domain').querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    radio.closest('.option').classList.add('selected');
+    updateSubmitButton();
+  });
+});
+
+function updateSubmitButton() {
+  const air = document.querySelector('input[name="air"]:checked');
+  const mar = document.querySelector('input[name="maritime"]:checked');
+  const cyb = document.querySelector('input[name="cyber"]:checked');
+  document.getElementById('submit-btn').disabled = !(air && mar && cyb);
+}
+
+function startDecisionPhase() {
+  document.getElementById('screen-briefing').classList.add('hidden');
+  document.getElementById('screen-decisions').classList.remove('hidden');
+  window.scrollTo(0, 0);
+
+  timerInterval = setInterval(() => {
+    remaining--;
+    const m = Math.floor(remaining / 60);
+    const s = String(remaining % 60).padStart(2, '0');
+    const display = document.getElementById('timer-display');
+    display.textContent = `${m}:${s}`;
+    document.getElementById('timer-fill').style.width = (remaining / 180 * 100) + '%';
+
+    if (remaining <= 30) {
+      display.style.color = '#e05252';
+      document.getElementById('timer-fill').style.background = '#e05252';
+    }
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      display.textContent = "TIME EXPIRED";
+      display.classList.add('expired');
+      // Auto-submit whatever is selected (or mark missing as failure)
+      setTimeout(submitDecisions, 1500);
+    }
+  }, 1000);
+}
+
+function submitDecisions() {
+  clearInterval(timerInterval);
+
+  const air = document.querySelector('input[name="air"]:checked')?.value || null;
+  const maritime = document.querySelector('input[name="maritime"]:checked')?.value || null;
+  const cyber = document.querySelector('input[name="cyber"]:checked')?.value || null;
+  const intel = document.querySelector('input[name="intel"]:checked')?.value || 'none';
+
+  let score = 0;
+  const results = [];
+
+  const domainChecks = [
+    {
+      name: "AIR — Defeating the Swarm",
+      choice: air,
+      truth: TRUTH.air,
+      correctLabel: "🌐 Networked Radar Fusion",
+      explanation: "The swarm was NOT stealth-coated — it was optimized in real time by an enemy quantum computer predicting your radar coverage. Fusing ALL conventional sensors created too many shifting, unpredictable views for the optimizer to exploit.",
+      wrongNote: "Quantum radar would waste a token (nothing stealthy to detect). ELINT fails because the swarm is QKD-controlled — its links physically cannot be intercepted."
+    },
+    {
+      name: "MARITIME — Saving the Submarine",
+      choice: maritime,
+      truth: TRUTH.maritime,
+      correctLabel: "🧲 Quantum Sensing Sweep",
+      explanation: "Your submarine was detected by hostile magnetometric quantum sensing from underwater drones — no sonar needed. Your counter-sweep found the enemy sensor platforms AND, critically, located the physical QKD relay endpoints feeding the swarm.",
+      wrongNote: "Withdrawing plays into the trap — the detection is LIVE magnetic tracking, not stale data. Running just keeps you on their plot."
+    },
+    {
+      name: "CYBER/C2 — Sealing the Leak",
+      choice: cyber,
+      truth: TRUTH.cyber,
+      correctLabel: "🔐 PQC Emergency Migration",
+      explanation: "Your legacy RSA/ECC encryption had ALREADY been broken by quantum computing — 'harvest now, decrypt later.' The intact-looking encryption was yesterday's illusion, and the exfiltration was the proof.",
+      wrongNote: "Segmentation treats a malware problem that doesn't exist. QKD protects future links beautifully — but does nothing about an algorithm that is already broken."
+    }
+  ];
+
+  domainChecks.forEach(d => {
+    const ok = d.choice === d.truth;
+    if (ok) score++;
+    results.push(`
+      <div class="result-card ${ok ? 'result-correct' : 'result-wrong'}">
+        <h4>${ok ? '✅' : '❌'} ${d.name}</h4>
+        <p>${ok ? '<strong>CORRECT.</strong> ' + d.explanation
+                : '<strong>' + (d.choice ? 'Your choice was ineffective.' : 'No decision entered.') + '</strong> Correct answer: <strong>' + d.correctLabel + '</strong>.</p><p>' + d.explanation + '<br><br><em>' + d.wrongNote + '</em>'}</p>
+      </div>
+    `);
+  });
+
+  // Intel scoring
+  const usedIntel = (intel === 'traffic' || intel === 'radar');
+  let intelNote;
+  if (intel === 'traffic') {
+    intelNote = "📊 Traffic Log Analysis showed: <em>'Exfiltration began at exactly the moment the enemy observed a routine transmission.'</em> — pointing to harvest-now-decrypt-later and confirming PQC. (+1)";
+    score++;
+  } else if (intel === 'radar') {
+    intelNote = "📡 Radar Profile Analysis showed: <em>'The drones are small — but NOT stealth-coated.'</em> — ruling out quantum radar and pointing to fusion. (+1)";
+    score++;
+  } else {
+    intelNote = "🚫 No intelligence was gathered before deciding. Diagnosis before therapy — a team that guesses squanders capabilities. (+0)";
+  }
+  results.push(`
+    <div class="result-card ${usedIntel ? 'result-correct' : 'result-wrong'}">
+      <h4>${usedIntel ? '✅' : '❌'} INTELLIGENCE CHANNEL</h4>
+      <p>${intelNote}</p>
+    </div>
+  `);
+
+  document.getElementById('results-container').innerHTML = results.join('');
+  document.getElementById('final-score').textContent = score + ' / 4';
+
+  const verdicts = {
+    0: "The adversary dominated every domain. Quantum convergence defeated fragmented thinking.",
+    1: "Partial success — but the adversary's integrated quantum stack outpaced isolated responses.",
+    2: "A fighting response. Half the picture — convergence-thinking still developing.",
+    3: "Strong performance. One vector remains — nearly convergence-aware.",
+    4: "TEXTBOOK VICTORY. You diagnosed the quantum convergence stack and countered it as a system."
+  };
+  document.getElementById('score-verdict').textContent = verdicts[score];
+
+  document.getElementById('screen-decisions').classList.add('hidden');
+  document.getElementById('screen-results').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
